@@ -30,7 +30,7 @@ var (
 	}
 
 	pluginUpdateComands = []string{
-		"./gvim", "-c", "PlugUpgrade", "-c", "PlugUpdate", "-c", "qa",
+		"./vim", "-c", "PlugUpgrade", "-c", "PlugUpdate", "-c", "qa",
 	}
 )
 
