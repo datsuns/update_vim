@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	workigDirectory = filepath.Join(os.Getenv("HOMEPATH"), "cwork", "programming", "vim", "vim")
+	workigDirectory = filepath.Join(os.Getenv("HOME"), "cwork", "programming", "vim", "vim")
 	buildDirectory  = filepath.Join(workigDirectory, "src")
 
 	gitCommands = [][]string{
@@ -30,7 +30,7 @@ var (
 	}
 
 	pluginUpdateComands = []string{
-		"./vim", "-c", "PlugUpgrade", "-c", "PlugUpdate", "-c", "qa",
+		"./gvim", "-c", "PlugUpgrade", "-c", "PlugUpdate", "-c", "qa",
 	}
 )
 
