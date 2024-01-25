@@ -7,11 +7,19 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	cp "github.com/otiai10/copy"
 )
 
 var (
-	workigDirectory = filepath.Join(os.Getenv("HOME"), "cwork", "programming", "vim", "vim")
-	buildDirectory  = filepath.Join(workigDirectory, "src")
+	rootDirectory = filepath.Join(os.Getenv("HOME"), "cwork", "programming", "vim")
+
+	workigDirectory  = filepath.Join(rootDirectory, "vim")
+	runtimeDirectory = filepath.Join(workigDirectory, "runtime")
+	buildDirectory   = filepath.Join(workigDirectory, "src")
+
+	installRoot = filepath.Join(rootDirectory, "install")
+	installDir  = filepath.Join(installRoot, "vim")
 
 	gitCommands = [][]string{
 		{"git", "reset", "--hard"},
@@ -59,6 +67,31 @@ func run_build_cmd(cmd []string) int {
 	return execute(cmd[0], cmd[1:]...)
 }
 
+func copy(src, dest string) error {
+	fmt.Printf("copy [%v] -> [%v]\n", src, dest)
+	err := cp.Copy(src, dest)
+	if err != nil {
+		panic(err)
+	}
+	return err
+}
+
+func run_install(srcRoot, installRoot string) {
+	copy(filepath.Join(srcRoot, "runtime"), installRoot)
+	list, _ := filepath.Glob(filepath.Join(srcRoot, "src", "*.exe"))
+	for _, l := range list {
+		f := filepath.Base(l)
+		copy(l, filepath.Join(installRoot, f))
+	}
+	copy(filepath.Join(srcRoot, "src", "tee", "tee.exe"), filepath.Join(installRoot, "tee.exe"))
+	copy(filepath.Join(srcRoot, "src", "xxd", "xxd.exe"), filepath.Join(installRoot, "xxd.exe"))
+	os.MkdirAll(filepath.Join(installRoot, "GvimExt32"), 0770)
+	os.MkdirAll(filepath.Join(installRoot, "GvimExt64"), 0770)
+	extlib := filepath.Join(srcRoot, "src", "GvimExt", "gvimext.dll")
+	copy(extlib, filepath.Join(installRoot, "GvimExt32", "gvimext.dll"))
+	copy(extlib, filepath.Join(installRoot, "GvimExt64", "gvimext.dll"))
+}
+
 func main() {
 	fmt.Printf("cd to [%v]\n", workigDirectory)
 	os.Chdir(workigDirectory)
@@ -72,5 +105,6 @@ func main() {
 	os.Chdir(buildDirectory)
 	run_build_cmd(buildCommands)
 	run_build_cmd(buildCommands_cui)
+	run_install(workigDirectory, installDir)
 	run_build_cmd(pluginUpdateComands)
 }
