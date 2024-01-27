@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 
 	cp "github.com/otiai10/copy"
 )
@@ -76,20 +77,35 @@ func copy(src, dest string) error {
 	return err
 }
 
+func async_copy(wg *sync.WaitGroup, src, dst string) {
+	wg.Add(1)
+	go func() {
+		copy(src, dst)
+		wg.Done()
+	}()
+}
+
 func run_install(srcRoot, installRoot string) {
-	copy(filepath.Join(srcRoot, "runtime"), installRoot)
+	var wg sync.WaitGroup
+
+	async_copy(&wg, filepath.Join(srcRoot, "runtime"), installRoot)
+
 	list, _ := filepath.Glob(filepath.Join(srcRoot, "src", "*.exe"))
 	for _, l := range list {
 		f := filepath.Base(l)
-		copy(l, filepath.Join(installRoot, f))
+		async_copy(&wg, l, filepath.Join(installRoot, f))
 	}
-	copy(filepath.Join(srcRoot, "src", "tee", "tee.exe"), filepath.Join(installRoot, "tee.exe"))
-	copy(filepath.Join(srcRoot, "src", "xxd", "xxd.exe"), filepath.Join(installRoot, "xxd.exe"))
+
+	async_copy(&wg, filepath.Join(srcRoot, "src", "tee", "tee.exe"), filepath.Join(installRoot, "tee.exe"))
+	async_copy(&wg, filepath.Join(srcRoot, "src", "xxd", "xxd.exe"), filepath.Join(installRoot, "xxd.exe"))
+
 	os.MkdirAll(filepath.Join(installRoot, "GvimExt32"), 0770)
 	os.MkdirAll(filepath.Join(installRoot, "GvimExt64"), 0770)
 	extlib := filepath.Join(srcRoot, "src", "GvimExt", "gvimext.dll")
-	copy(extlib, filepath.Join(installRoot, "GvimExt32", "gvimext.dll"))
-	copy(extlib, filepath.Join(installRoot, "GvimExt64", "gvimext.dll"))
+	async_copy(&wg, extlib, filepath.Join(installRoot, "GvimExt32", "gvimext.dll"))
+	async_copy(&wg, extlib, filepath.Join(installRoot, "GvimExt64", "gvimext.dll"))
+
+	wg.Wait()
 }
 
 func main() {
