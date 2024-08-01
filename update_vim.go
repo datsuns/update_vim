@@ -41,6 +41,8 @@ var (
 	pluginUpdateComands = []string{
 		"./gvim", "-c", "PlugUpgrade", "-c", "PlugUpdate", "-c", "qa",
 	}
+
+	forceShell = "C:\\Windows\\System32\\cmd.exe"
 )
 
 func print_proc(r io.Reader) {
@@ -122,5 +124,7 @@ func main() {
 	run_build_cmd(buildCommands)
 	run_build_cmd(buildCommands_cui)
 	run_install(workigDirectory, installDir)
+	os.Chdir(installDir)
+	os.Setenv("SHELL", forceShell)
 	run_build_cmd(pluginUpdateComands)
 }
