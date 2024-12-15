@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	rootDirectory = filepath.Join(os.Getenv("HOME"), "cwork", "programming", "vim")
+	rootDirectory = filepath.Join(os.Getenv("HOME"), "work", "programming", "vim")
 
 	workigDirectory  = filepath.Join(rootDirectory, "vim")
 	runtimeDirectory = filepath.Join(workigDirectory, "runtime")
@@ -24,10 +24,16 @@ var (
 
 	gitCommands = [][]string{
 		{"git", "reset", "--hard"},
+		{"git", "fetch", "--prune", "origin"},
+		{"git", "fetch", "--prune", "base"},
 		{"git", "checkout", "master"},
-		{"git", "pull", "origin", "master"},
+		{"git", "merge", "origin/master"},
+		{"git", "merge", "base/master"},
 		{"git", "checkout", "my"},
-		{"git", "merge", "master"},
+		{"git", "merge", "origin/my"},
+		{"git", "merge", "origin/master"},
+		{"git", "push", "origin", "master"},
+		{"git", "push", "origin", "my"},
 	}
 
 	buildCommands = []string{
